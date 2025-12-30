@@ -1,9 +1,9 @@
 @echo off
 setlocal enabledelayedexpansion
-title SimpleCensor - Full Automated Setup
+title SimpleCensor - RTX GPU Automated Setup
 
 echo ======================================================
-echo         SIMPLECENSOR FULL SYSTEM SETUP
+echo         SIMPLECENSOR RTX GPU SYSTEM SETUP
 echo ======================================================
 echo.
 
@@ -13,11 +13,12 @@ mkdir output 2>nul
 
 :: 2. Download and Extract Portable Python
 if exist "python_portable\python.exe" goto :CHECKVENV
-echo [1/4] Downloading Portable Python...
+echo [1/4] Downloading Portable Python (3.11.9)...
 curl -L "https://www.python.org/ftp/python/3.11.9/python-3.11.9-embed-amd64.zip" -o python_portable.zip
 mkdir python_portable
 tar -xf python_portable.zip -C python_portable
 del python_portable.zip
+
 cd python_portable
 echo python311.zip > python311._pth
 echo . >> python311._pth
@@ -35,19 +36,28 @@ echo [2/4] Creating Virtual Environment...
 python_portable\python.exe -m virtualenv venv
 
 :INSTALLREQS
-:: 4. Install Requirements (Specifically including onnx and onnxruntime)
-echo [3/4] Installing AI libraries and Runtimes...
+:: 4. Install Requirements (FORCING CUDA GPU)
+echo [3/4] Installing RTX GPU Libraries...
 venv\Scripts\python.exe -m pip install --upgrade pip
-venv\Scripts\python.exe -m pip install ultralytics gradio opencv-python numpy moviepy huggingface_hub mss PyQt5 onnx onnxruntime --only-binary :all:
 
-:: 5. Download Models from Hugging Face
+echo Installing CUDA-enabled PyTorch...
+venv\Scripts\python.exe -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+
+echo Installing ONNX GPU Runtime and Ultralytics...
+venv\Scripts\python.exe -m pip uninstall onnxruntime -y 2>nul
+venv\Scripts\python.exe -m pip install ultralytics mss PyQt5 onnx onnxruntime-gpu numpy==1.26.4 huggingface_hub
+
+:: 5. Download Models (REFINED SYNC)
 echo [4/4] Syncing models from genericgiraffe/censorship...
-venv\Scripts\python.exe -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='genericgiraffe/censorship', local_dir='Models', local_dir_use_symlinks=False)"
+:: This refined command forces the download directly to the Models folder
+venv\Scripts\python.exe -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='genericgiraffe/censorship', local_dir='Models', local_dir_use_symlinks=False, allow_patterns=['*.onnx', '*.pt', '*.yaml', 'config.json'])"
 
-echo.
+cls
 echo ======================================================
-echo            SETUP COMPLETE - CLOSING IN 3s
+echo           		 SETUP COMPLETE 
 echo ======================================================
 echo.
-timeout /t 3
+echo 
+echo.
+pause
 exit
