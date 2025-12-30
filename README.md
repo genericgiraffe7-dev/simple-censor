@@ -8,7 +8,7 @@ SimpleCensor is an automated NSFW censorship suite. It features a Gradio WebUI f
 
 To get the system running, follow these steps:
 
-1. **Run setup.bat**: This is the most critical step. This batch file automates the entire installation process. It creates a portable Python environment, configures a virtual environment with GPU-accelerated libraries for NVIDIA RTX cards, and downloads the required AI models from the Hugging Face repository.
+1. **Run setup.bat**: This is the most critical step. This batch file automates the entire installation process. It creates a portable Python environment, configures a virtual environment with GPU-accelerated libraries for NVIDIA cards, and downloads the required AI models from the Hugging Face repository.
 2. **Launch the Application**: Once the setup is complete, you can use the other provided batch files to start the specific module you need.
 
 ---
@@ -22,7 +22,7 @@ This module provides real-time censorship of your desktop environment. It is lau
 
 * **Dual-Pass Detection**: It uses a global pass to maintain stability across the whole screen and a tiled pass to catch small details or thumbnails that the global pass might miss.
 * **Momentum Prediction**: The code calculates the velocity and acceleration of moving objects on your screen. This allows the censor box to "lead" the movement, ensuring sensitive areas remain covered even during fast scrolling.
-* **Interactive Configuration**: When started, the script will look for a `preferences.json` file. If it is not found, it will prompt you for:
+* **Interactive Configuration**: On the first run, the script will prompt you for your setup choices and create a `preferences.json` file to remember your settings for future sessions. It will prompt you for:
     * **Performance Settings**: You can define the update delay, smoothing factor, and max missing frames to balance speed and visual fluidness.
     * **Censor Criteria**: You will be asked a series of yes/no questions for 18 different categories to determine exactly what the AI should target.
 
@@ -36,7 +36,7 @@ This module provides a browser-based interface for processing static files. It i
 
 ## Recommended Settings
 
-For users with an NVIDIA RTX 4060, the following settings in the `preferences.json` are recommended for the best balance of speed and coverage:
+The following settings are recommended for the desktop feature to ensure the best balance of speed and coverage:
 
 | Setting | Recommended Value | Description |
 | :--- | :--- | :--- |
@@ -51,5 +51,5 @@ For users with an NVIDIA RTX 4060, the following settings in the `preferences.js
 ## Technical Requirements
 
 * **Operating System**: Windows 10 or 11.
-* **Hardware**: An NVIDIA GPU (RTX 30-series or 40-series recommended) is required for the real-time overlay to function smoothly.
+* **Hardware**: An NVIDIA GPU is required for the real-time overlay to function smoothly.
 * **Drivers**: Ensure you have up-to-date NVIDIA drivers installed to support CUDA and ONNX GPU acceleration.
