@@ -1,56 +1,53 @@
 @echo off
 setlocal enabledelayedexpansion
-title SimpleCensor - Automated Venv Setup
+title SimpleCensor - Full Automated Setup
 
 echo ======================================================
-echo         SIMPLECENSOR ISOLATED VENV SETUP
+echo         SIMPLECENSOR FULL SYSTEM SETUP
 echo ======================================================
 echo.
 
-:: 1. Download Base Portable Python
-if not exist "python_base" (
-    echo [1/4] Downloading Base Portable Python 3.11...
-    powershell -Command "Invoke-WebRequest -Uri 'https://www.python.org/ftp/python/3.11.9/python-3.11.9-embed-amd64.zip' -OutFile 'python_base.zip'"
-    echo [1/4] Extracting Python...
-    powershell -Command "Expand-Archive -Path 'python_base.zip' -DestinationPath 'python_base' -Force"
-    del python_base.zip
-    
-    :: Enable site-packages for the base so we can install virtualenv
-    echo [1/4] Configuring base environment...
-    cd python_base
-    powershell -Command "(Get-Content python311._pth) -replace '#import site', 'import site' | Set-Content python311._pth"
-    powershell -Command "Invoke-WebRequest -Uri 'https://bootstrap.pypa.io/get-pip.py' -OutFile 'get-pip.py'"
-    .\python.exe get-pip.py --quiet
-    .\python.exe -m pip install virtualenv --quiet
-    del get-pip.py
-    cd ..
-) else (
-    echo [1/4] Base Python already exists.
-)
+:: 1. Initial Folders
+mkdir Models 2>nul
+mkdir output 2>nul
 
-:: 2. Create the VENV
-if not exist "venv" (
-    echo [2/4] Creating Virtual Environment (venv)...
-    python_base\python.exe -m virtualenv venv
-) else (
-    echo [2/4] Virtual environment already exists.
-)
+:: 2. Download and Extract Portable Python
+if exist "python_portable\python.exe" goto :CHECKVENV
+echo [1/4] Downloading Portable Python...
+curl -L "https://www.python.org/ftp/python/3.11.9/python-3.11.9-embed-amd64.zip" -o python_portable.zip
+mkdir python_portable
+tar -xf python_portable.zip -C python_portable
+del python_portable.zip
+cd python_portable
+echo python311.zip > python311._pth
+echo . >> python311._pth
+echo import site >> python311._pth
+curl -L "https://bootstrap.pypa.io/get-pip.py" -o get-pip.py
+.\python.exe get-pip.py --quiet
+.\python.exe -m pip install virtualenv --quiet
+del get-pip.py
+cd ..
 
-:: 3. Install Requirements into VENV
-echo [3/4] Installing AI libraries into venv...
-echo Note: This may take several minutes depending on your internet speed.
-venv\Scripts\python.exe -m pip install --upgrade pip --quiet
-venv\Scripts\python.exe -m pip install ultralytics gradio opencv-python numpy moviepy huggingface_hub onnxruntime-gpu --quiet
+:CHECKVENV
+:: 3. Create the VENV
+if exist "venv\Scripts\python.exe" goto :INSTALLREQS
+echo [2/4] Creating Virtual Environment...
+python_portable\python.exe -m virtualenv venv
 
-:: 4. Final Folder Prep
-if not exist "Models" mkdir Models
-if not exist "output" mkdir output
+:INSTALLREQS
+:: 4. Install Requirements (Specifically including onnx and onnxruntime)
+echo [3/4] Installing AI libraries and Runtimes...
+venv\Scripts\python.exe -m pip install --upgrade pip
+venv\Scripts\python.exe -m pip install ultralytics gradio opencv-python numpy moviepy huggingface_hub mss PyQt5 onnx onnxruntime --only-binary :all:
+
+:: 5. Download Models from Hugging Face
+echo [4/4] Syncing models from genericgiraffe/censorship...
+venv\Scripts\python.exe -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='genericgiraffe/censorship', local_dir='Models', local_dir_use_symlinks=False)"
 
 echo.
 echo ======================================================
-echo            SETUP COMPLETE SUCCESSFULLY
+echo            SETUP COMPLETE - CLOSING IN 3s
 echo ======================================================
 echo.
-echo Environment is ready. You can now use run_app.bat to start.
-echo.
-pause
+timeout /t 3
+exit

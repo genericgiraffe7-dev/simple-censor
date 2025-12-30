@@ -16,7 +16,7 @@ if not exist "venv\Scripts\python.exe" (
 
 :: 2. Launch the WebUI
 echo Launching SimpleCensor WebUI...
-venv\Scripts\python.exe editgui.py
+venv\Scripts\python.exe webui.py
 
 :: 3. Keep window open if the app crashes
 if %ERRORLEVEL% neq 0 (
