@@ -1,6 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
-title SimpleCensor - RTX GPU Automated Setup
+title SimpleCensor - Full GPU Setup
 
 echo ======================================================
 echo         SIMPLECENSOR RTX GPU SYSTEM SETUP
@@ -36,25 +36,26 @@ echo [2/4] Creating Virtual Environment...
 python_portable\python.exe -m virtualenv venv
 
 :INSTALLREQS
-:: 4. Install Requirements (FORCING CUDA GPU)
-echo [3/4] Installing RTX GPU Libraries...
+:: 4. Install Requirements (Including Gradio for the WebUI)
+echo [3/4] Installing RTX GPU Libraries and WebUI...
 venv\Scripts\python.exe -m pip install --upgrade pip
 
+:: Force CUDA Torch
 echo Installing CUDA-enabled PyTorch...
 venv\Scripts\python.exe -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 
-echo Installing ONNX GPU Runtime and Ultralytics...
+:: Install everything else (Adding Gradio + MoviePy)
+echo Installing ONNX GPU, Gradio, and Ultralytics...
 venv\Scripts\python.exe -m pip uninstall onnxruntime -y 2>nul
-venv\Scripts\python.exe -m pip install ultralytics mss PyQt5 onnx onnxruntime-gpu numpy==1.26.4 huggingface_hub
+venv\Scripts\python.exe -m pip install ultralytics mss PyQt5 onnx onnxruntime-gpu numpy==1.26.4 huggingface_hub gradio moviepy
 
-:: 5. Download Models (REFINED SYNC)
+:: 5. Download Models (REFINED)
 echo [4/4] Syncing models from genericgiraffe/censorship...
-:: This refined command forces the download directly to the Models folder
-venv\Scripts\python.exe -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='genericgiraffe/censorship', local_dir='Models', local_dir_use_symlinks=False, allow_patterns=['*.onnx', '*.pt', '*.yaml', 'config.json'])"
+venv\Scripts\python.exe -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='genericgiraffe/censorship', local_dir='Models', local_dir_use_symlinks=False, allow_patterns=['*.onnx', '*.pt'])"
 
 cls
 echo ======================================================
-echo           		 SETUP COMPLETE 
+echo          		  SETUP COMPLETE 
 echo ======================================================
 echo.
 echo 
